@@ -1,13 +1,11 @@
-# 🔐 My Encrypt — Web Workbench
+# My Encrypt
 
-A pixel-faithful **HTML + CSS + JavaScript** port of [`My Encrypt.py`](../My%20Encrypt.py) —
+A **HTML + CSS + JavaScript** port of [`My Encrypt.py`](../My%20Encrypt.py) —
 the password-seeded substitution cipher — as a static website you can host free on
 **GitHub Pages**.
 
 > **Everything is cross-compatible:** text encrypted by the Python script can be
 > decrypted by this site with the same *shift* + *password*, and vice-versa.
-> The page even runs a self-test against reference outputs captured from the real
-> Python script on load, so you can always see that the port is in sync.
 
 ## ✨ Features
 
@@ -18,7 +16,6 @@ the password-seeded substitution cipher — as a static website you can host fre
 | `[3]` Encrypt a text file | 📄 **Encrypt File** | Drag & drop, downloads `name.enc.txt` |
 | `[4]` Decrypt a text file | 📁 **Decrypt File** | Downloads `name.dec.txt` |
 | `[5]` Get seed from password | 🧬 **Get Seed** | Shows base seed + password seed |
-| — | ℹ️ **About** | Live compatibility self-test |
 
 Extras: copy-to-clipboard buttons, drag-and-drop file zones, mobile-friendly
 dark UI, **100% client-side** (no servers, works offline from `file://`).
@@ -77,14 +74,14 @@ are byte-for-byte what `encrypt_file()` / `decrypt_file()` would produce.
 
 ```
 my-encrypt-site/
-├── index.html            # single-page app (6 tabs)
+├── index.html            # single-page app (5 tabs)
 ├── css/style.css         # dark "cipher terminal" theme, no frameworks
 ├── js/
 │   ├── sha512.js         # pure-JS SHA-512 (no crypto.subtle → works offline)
 │   ├── mt19937.js        # Mersenne Twister + CPython seeding/shuffle
 │   ├── encrypt.js        # the cipher engine (port of My Encrypt.py)
-│   ├── vectors.js        # reference outputs captured from the real script
-│   ├── selftest.js       # validates the engine against vectors
+│   ├── vectors.js        # reference outputs captured from the real script (tests only)
+│   ├── selftest.js       # validates the engine against vectors (tests only)
 │   └── ui.js             # page controller
 └── tests/
     ├── run-selftest.js   # Node harness: node tests/run-selftest.js
@@ -97,8 +94,9 @@ my-encrypt-site/
 node tests/run-selftest.js     # 15 checks against real Python outputs
 ```
 
-The **About** tab re-runs the same checks in your browser — the pill in the
-header turns green (Python-compatible ✓ 15/15) when everything matches.
+The engine checks are dev-time only: run `node tests/run-selftest.js`
+(15 checks against real Python outputs) or the headless browser test
+`node tests/e2e.test.js` (needs `npm install jsdom` in `tests/`).
 
 Reference vectors were generated with **CPython 3.14.3**; the seeding algorithm
 used by `random.seed(str)` is unchanged from Python 3.7 through 3.14, so output

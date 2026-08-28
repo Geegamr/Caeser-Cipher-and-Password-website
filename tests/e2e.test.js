@@ -56,18 +56,24 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   window.addEventListener('error', (e) => pageErrors.push(String(e.message)));
 
   await until(() => window.document.readyState === 'complete');
-  await until(() => window.MyEncrypt && window.SELFTEST);
-  await sleep(150); // let the boot self-test render
+  await until(() => window.MyEncrypt && window.MT && window.SHA512);
+  // vectors.js is no longer loaded by the page itself — inject it for assertions.
+  window.eval(fs.readFileSync(path.join(root, 'js', 'vectors.js'), 'utf8'));
+  await sleep(120);
 
   const $ = (id) => document.getElementById(id);
   const fire = (el, type) => el.dispatchEvent(new window.Event(type, { bubbles: true }));
 
-  /* 1. engine present & boot self-test all green */
+  /* 1. plain dumb layout: engine present, no logo, no pill, no About, no footer */
   ok('page boots with engine loaded', !!window.MyEncrypt && !!window.MT && !!window.SHA512);
-  const pill = $('compat-pill');
-  await until(() => pill.className.indexOf('good') !== -1);
-  ok('header pill turns green (15/15)', $('compat-label').textContent.indexOf('15/15') !== -1,
-    $('compat-label').textContent);
+  ok('plain header (title only, no logo/pill)',
+    document.querySelector('.topbar h1').textContent === 'My Encrypt' &&
+    !document.getElementById('compat-pill') &&
+    !document.querySelector('.brand-mark'));
+  ok('About tab removed (5 tabs left)',
+    !document.querySelector('.tab[data-tab="about"]') &&
+    document.querySelectorAll('.tab').length === 5);
+  ok('no footer', !document.querySelector('footer') && !document.querySelector('.foot'));
 
   /* 2. tabs switch panels */
   document.querySelector('.tab[data-tab="seed"]').click();

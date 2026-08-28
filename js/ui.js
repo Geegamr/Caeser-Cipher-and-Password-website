@@ -296,48 +296,6 @@
     });
   }
 
-  /* ---------------- self-test + compatibility pill ---------------- */
-
-  function runChecks() {
-    var list = $('selftest-results');
-    var pill = $('compat-pill');
-    var label = $('compat-label');
-    if (!list || typeof SELFTEST === 'undefined') return;
-
-    var results = SELFTEST.run();
-    clearNode(list);
-
-    var pass = 0;
-    results.forEach(function (r) {
-      if (r.pass) pass++;
-      var li = document.createElement('li');
-      li.className = 'item ' + (r.pass ? 'pass' : 'fail');
-      if (!r.pass) li.title = 'expected: ' + r.expected + '\nactual:   ' + r.actual;
-
-      var mark = document.createElement('span');
-      mark.className = 'mark';
-      mark.textContent = r.pass ? '\u2713' : '\u2717';
-      li.appendChild(mark);
-
-      var name = document.createElement('span');
-      name.textContent = r.name;
-      li.appendChild(name);
-
-      list.appendChild(li);
-    });
-
-    if (pill && label) {
-      pill.classList.remove('busy', 'good', 'bad');
-      if (pass === results.length) {
-        pill.classList.add('good');
-        label.textContent = 'Python-compatible \u2713 ' + pass + '/' + results.length;
-      } else {
-        pill.classList.add('bad');
-        label.textContent = 'Compatibility FAILED ' + pass + '/' + results.length;
-      }
-    }
-  }
-
   /* ---------------- boot ---------------- */
 
   function init() {
@@ -347,10 +305,6 @@
     initFilePanel('efile', 'encrypt');
     initFilePanel('dfile', 'decrypt');
     initSeedPanel();
-
-    var again = $('selftest-btn');
-    if (again) again.addEventListener('click', runChecks);
-    runChecks();
   }
 
   if (document.readyState === 'loading') {
