@@ -1,0 +1,12 @@
+# OS / editor junk
+Thumbs.db
+.DS_Store
+desktop.ini
+.vscode/
+.idea/
+*.log
+
+# test dependencies (optional, dev-only)
+node_modules/
+package.json
+package-lock.json

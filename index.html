@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Encrypt — Web Workbench</title>
+  <meta name="description" content="Exact browser port of My Encrypt.py. Cross-compatible with the Python CLI: what it encrypts this site can decrypt, and vice-versa." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="bg-glow bg-glow--a"></div>
+  <div class="bg-glow bg-glow--b"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div class="brand-text">
+        <h1>My Encrypt</h1>
+        <p>web workbench · byte-for-byte port of <code>My Encrypt.py</code></p>
+      </div>
+    </div>
+    <div class="pill" id="compat-pill" title="Auto-checked on load">
+      <span class="pill-dot"></span>
+      <span class="pill-label" id="compat-label">verifying…</span>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist">
+    <button class="tab is-active" data-tab="enc" role="tab" aria-selected="true">&#x1F512; Encrypt Text</button>
+    <button class="tab" data-tab="dec" role="tab" aria-selected="false">&#x1F513; Decrypt Text</button>
+    <button class="tab" data-tab="efile" role="tab" aria-selected="false">&#x1F4C4; Encrypt File</button>
+    <button class="tab" data-tab="dfile" role="tab" aria-selected="false">&#x1F4C1; Decrypt File</button>
+    <button class="tab" data-tab="seed" role="tab" aria-selected="false">&#x1F9EC; Get Seed</button>
+    <button class="tab" data-tab="about" role="tab" aria-selected="false">&#x2139; About</button>
+  </nav>
+
+  <main class="shell">
+
+    <!-- ============ ENCRYPT TEXT ============ -->
+    <section class="panel is-active" id="panel-enc">
+      <div class="panel-head">
+        <h2>Encrypt text</h2>
+        <span class="hint">Format: <code>text, shift, password</code></span>
+      </div>
+      <div class="field">
+        <label for="enc-text">Text to encrypt</label>
+        <textarea id="enc-text" rows="4" spellcheck="false" placeholder="Plain text you want to hide…"></textarea>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="enc-shift">Shift (integer)</label>
+          <input id="enc-shift" type="number" inputmode="numeric" value="3" placeholder="3" />
+        </div>
+        <div class="field">
+          <label for="enc-pass">Password</label>
+          <input id="enc-pass" type="password" placeholder="secret123" autocomplete="off" />
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn--primary" id="enc-go">Encrypt</button>
+        <button class="btn btn--ghost" id="enc-copy" disabled>Copy result &#x29C9;</button>
+      </div>
+      <div class="output" id="enc-out" aria-live="polite"><span class="muted">Result will appear here.</span></div>
+    </section>
+
+    <!-- ============ DECRYPT TEXT ============ -->
+    <section class="panel" id="panel-dec">
+      <div class="panel-head">
+        <h2>Decrypt text</h2>
+        <span class="hint">Format: <code>text, shift, password</code></span>
+      </div>
+      <div class="field">
+        <label for="dec-text">Text to decrypt</label>
+        <textarea id="dec-text" rows="4" spellcheck="false" placeholder="Ciphertext…"></textarea>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="dec-shift">Shift (integer)</label>
+          <input id="dec-shift" type="number" inputmode="numeric" value="3" placeholder="3" />
+        </div>
+        <div class="field">
+          <label for="dec-pass">Password</label>
+          <input id="dec-pass" type="password" placeholder="secret123" autocomplete="off" />
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn--primary" id="dec-go">Decrypt</button>
+        <button class="btn btn--ghost" id="dec-copy" disabled>Copy result &#x29C9;</button>
+      </div>
+      <div class="output" id="dec-out" aria-live="polite"><span class="muted">Decrypted text will appear here.</span></div>
+    </section>
+<!-- ============ ENCRYPT FILE ============ -->
+    <section class="panel" id="panel-efile">
+      <div class="panel-head">
+        <h2>Encrypt a text file</h2>
+        <span class="hint">Reads UTF-8 text and downloads an encrypted copy</span>
+      </div>
+      <label class="drop" id="efile-drop" tabindex="0">
+        <input id="efile-file" type="file" accept=".txt,.text,.md,.log" hidden />
+        <span class="drop-ico">&#x1F4C2;</span>
+        <span class="drop-title">Drop a text file here, or click to browse</span>
+        <span class="drop-sub" id="efile-name">No file selected</span>
+      </label>
+      <div class="row">
+        <div class="field">
+          <label for="efile-shift">Shift (integer)</label>
+          <input id="efile-shift" type="number" inputmode="numeric" value="3" placeholder="3" />
+        </div>
+        <div class="field">
+          <label for="efile-pass">Password</label>
+          <input id="efile-pass" type="password" placeholder="secret123" autocomplete="off" />
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn--primary" id="efile-go">Encrypt &amp; download</button>
+      </div>
+      <div class="output" id="efile-status" aria-live="polite"><span class="muted">Waiting for a file…</span></div>
+    </section>
+
+    <!-- ============ DECRYPT FILE ============ -->
+    <section class="panel" id="panel-dfile">
+      <div class="panel-head">
+        <h2>Decrypt a text file</h2>
+        <span class="hint">Reads UTF-8 text and downloads a decrypted copy</span>
+      </div>
+      <label class="drop" id="dfile-drop" tabindex="0">
+        <input id="dfile-file" type="file" accept=".txt,.text,.md,.log" hidden />
+        <span class="drop-ico">&#x1F4C1;</span>
+        <span class="drop-title">Drop an encrypted text file here, or click to browse</span>
+        <span class="drop-sub" id="dfile-name">No file selected</span>
+      </label>
+      <div class="row">
+        <div class="field">
+          <label for="dfile-shift">Shift (integer)</label>
+          <input id="dfile-shift" type="number" inputmode="numeric" value="3" placeholder="3" />
+        </div>
+        <div class="field">
+          <label for="dfile-pass">Password</label>
+          <input id="dfile-pass" type="password" placeholder="secret123" autocomplete="off" />
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn--primary" id="dfile-go">Decrypt &amp; download</button>
+      </div>
+      <div class="output" id="dfile-status" aria-live="polite"><span class="muted">Waiting for a file…</span></div>
+    </section>
+
+    <!-- ============ GET SEED ============ -->
+    <section class="panel" id="panel-seed">
+      <div class="panel-head">
+        <h2>Get seed from password</h2>
+        <span class="hint">The shuffled alphabet a password turns into</span>
+      </div>
+      <div class="field">
+        <label for="seed-pass">Password</label>
+        <input id="seed-pass" type="text" placeholder="secret123" autocomplete="off" />
+      </div>
+      <div class="actions">
+        <button class="btn btn--primary" id="seed-go">Generate seed</button>
+        <button class="btn btn--ghost" id="seed-copy" disabled>Copy seed &#x29C9;</button>
+      </div>
+      <div class="block">
+        <div class="code-label">Base seed</div>
+        <pre class="seed-line" id="seed-base">(waiting)</pre>
+      </div>
+      <div class="block">
+        <div class="code-label">Seed for that password</div>
+        <pre class="seed-line" id="seed-custom">(waiting)</pre>
+      </div>
+      <div class="output">
+        <span>This is exactly what <code>random.seed(pw) → random.shuffle()</code> produces
+        in Python — the cipher's key table.</span>
+      </div>
+    </section>
+<!-- ============ ABOUT ============ -->
+    <section class="panel" id="panel-about">
+      <div class="panel-head"><h2>About this tool</h2></div>
+      <div class="note-tile">
+        <p>
+          This site is a 1-to-1 re-implementation of <code>My Encrypt.py</code> in
+          <strong>HTML + CSS + JS</strong> — a Caesar-style substitution cipher over a
+          66-character alphabet, ordered deterministically from a password using CPython's
+          <code>random.seed()</code> and <code>random.shuffle()</code>.
+        </p>
+        <p>Everything runs <strong>100% client-side</strong>. No text, files, or passwords
+        ever leave your machine. It even works offline as a <code>file://</code> page.</p>
+      </div>
+
+      <h3 class="section">Compatibility guarantee</h3>
+      <p class="prose">
+        The engine reproduces CPython's Mersenne Twister seeding <em>exactly</em>:
+        <code>utf8(password) + SHA-512(password)</code> → big-int → little-endian 32-bit
+        words → <code>init_by_array</code> → Fisher–Yates with <code>getrandbits</code>.
+        It is certified byte-for-byte against Python 3.14.3, so anything this site encrypts
+        can be decrypted by the Python CLI with the same shift &amp; password — and vice-versa.
+      </p>
+
+      <div class="self-test">
+        <div class="self-test-head">
+          <div>
+            <h3 class="section" style="margin:0">Self-test</h3>
+            <p class="muted" style="margin:4px 0 0">Verified against the reference outputs from the real Python script.</p>
+          </div>
+          <button class="btn btn--primary" id="selftest-btn">Run again</button>
+        </div>
+        <ul class="checklist" id="selftest-results">
+          <li class="muted">Running on load…</li>
+        </ul>
+      </div>
+
+      <h3 class="section">How it's built</h3>
+      <ul class="prose">
+        <li><code>sha512.js</code> — pure-JS SHA-512 (works offline / from <code>file://</code>).</li>
+        <li><code>mt19937.js</code> — Mersenne Twister + CPython-compatible seeding &amp; shuffle.</li>
+        <li><code>encrypt.js</code> — the cipher engine.</li>
+        <li><code>vectors.js</code> — reference vectors generated by the real Python script.</li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <span class="privacy">&#x1F5D9; 100% local — nothing is uploaded</span>
+    <span class="version">v1.0 · port of <code>My Encrypt.py</code></span>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/vectors.js"></script>
+  <script src="js/sha512.js"></script>
+  <script src="js/mt19937.js"></script>
+  <script src="js/encrypt.js"></script>
+  <script src="js/selftest.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>
