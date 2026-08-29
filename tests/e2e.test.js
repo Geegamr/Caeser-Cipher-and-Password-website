@@ -70,9 +70,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     document.querySelector('.topbar h1').textContent === 'My Encrypt' &&
     !document.getElementById('compat-pill') &&
     !document.querySelector('.brand-mark'));
-  ok('About tab removed (5 tabs left)',
+  ok('About tab removed (3 tabs left)',
     !document.querySelector('.tab[data-tab="about"]') &&
-    document.querySelectorAll('.tab').length === 5);
+    document.querySelectorAll('.tab').length === 3);
   ok('no footer', !document.querySelector('footer') && !document.querySelector('.foot'));
 
   /* 2. tabs switch panels */
@@ -111,50 +111,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     $('seed-custom').textContent === window.PY_VECTORS.seed_secret);
   ok('base seed shown', $('seed-base').textContent === window.MyEncrypt.BASE_SEED);
 
-  /* 7. encrypt file (drop-zone style selection) + download */
-  const fileText = 'Hello from the file!\nSecond line with symbols: !@# 123';
-  const f1 = new window.File([fileText], 'notes.txt', { type: 'text/plain' });
-  Object.defineProperty($('efile-file'), 'files', { value: [f1], configurable: true });
-  fire($('efile-file'), 'change');
-  ok('file picker shows selected name', $('efile-name').textContent.indexOf('notes.txt') !== -1);
-  $('efile-shift').value = '3';
-  $('efile-pass').value = 'secret123';
-  $('efile-go').click();
-  await until(() => $('efile-status').textContent.indexOf('Encrypted and downloaded') !== -1);
-  ok('file encrypted & offered as notes.enc.txt', capturedName === 'notes.enc.txt', capturedName);
-  const encFileText = await new Promise((res) => {
-    const fr = new window.FileReader();
-    fr.onload = () => res(String(fr.result));
-    fr.readAsText(capturedBlob, 'utf-8');
-  });
-  ok('file content identical to Python encrypt_file()',
-    encFileText === window.MyEncrypt.encrypt(fileText, 3, 'secret123') &&
-    encFileText === "S<33a zgar 's< zu3</\n+<4ajw 3uj< ;u's +,r2a3+n /$^ [pv");
-
-  /* 8. decrypt that encrypted file back.
-   * NOTE: the real Python script does NOT restore upper-case when a shifted
-   * letter landed on a symbol (symbols carry no case), so its own round-trip
-   * of this file yields "second" in lower case. We assert the exact Python
-   * ground truth, captured from My Encrypt.py (CPython 3.14.3). */
-  capturedBlob = null; capturedName = null;
-  const f2 = new window.File([encFileText], 'notes.enc.txt', { type: 'text/plain' });
-  Object.defineProperty($('dfile-file'), 'files', { value: [f2], configurable: true });
-  fire($('dfile-file'), 'change');
-  $('dfile-shift').value = '3';
-  $('dfile-pass').value = 'secret123';
-  $('dfile-go').click();
-  await until(() => $('dfile-status').textContent.indexOf('Decrypted and downloaded') !== -1);
-  ok('file decrypted back as notes.dec.txt', capturedName === 'notes.dec.txt', capturedName);
-  const decFileText = await new Promise((res) => {
-    const fr = new window.FileReader();
-    fr.onload = () => res(String(fr.result));
-    fr.readAsText(capturedBlob, 'utf-8');
-  });
-  ok('file round-trip matches the Python script exactly',
-    decFileText === 'Hello from the file!\nsecond line with symbols: !@# 123',
-    JSON.stringify(decFileText));
-
-  /* 9. unicode + multiline engine round-trip — again vs real Python output
+  /* 7. unicode + multiline engine round-trip — again vs real Python output
    * (the leading H of "Héllo" lands on a symbol, Python keeps it lowercase). */
   const tricky = 'Héllo ❤ wörld!\nmulti\nline\ttabs 123 !!!';
   const rt = window.MyEncrypt.decrypt(
@@ -162,7 +119,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   ok('unicode/multiline round-trip matches Python exactly',
     rt === 'héllo ❤ wörld!\nmulti\nline\ttabs 123 !!!', JSON.stringify(rt));
 
-  /* 10. no uncaught page errors during the whole session */
+  /* 8. no uncaught page errors during the whole session */
   ok('no uncaught JS errors on the page', pageErrors.length === 0, pageErrors.join(' | '));
 
   console.log('-------------------------------------');

@@ -3,8 +3,6 @@
  * the CLI behaviour of `My Encrypt.py`:
  *   - inputs validated like the CLI's int()/rsplit(",", 2) flow
  *   - outputs printed in the same format the CLI prints them
- *   - file tabs transform UTF-8 text and download the result (the browser
- *     cannot overwrite a file in place — your original file is never touched)
  */
 (function () {
   'use strict';
@@ -174,99 +172,6 @@
     });
   }
 
-  /* ---------------- encrypt / decrypt file ---------------- */
-
-  // notes.txt     -> notes.enc.txt   (encrypt)
-  // notes.enc.txt -> notes.dec.txt   (decrypt)
-  function derivedName(originalName, verb) {
-    var base = originalName.replace(/\.enc\.txt$/i, '');
-    base = base.replace(/\.[^.]*$/, '');
-    return base + '.' + (verb === 'encrypt' ? 'enc' : 'dec') + '.txt';
-  }
-
-  function initFilePanel(prefix, verb) {
-    var input = $(prefix + '-file');
-    var drop = $(prefix + '-drop');
-    var nameEl = $(prefix + '-name');
-    var goBtn = $(prefix + '-go');
-    var outEl = $(prefix + '-status');
-    var file = null;
-
-    function setFile(f) {
-      if (!f) return;
-      file = f;
-      nameEl.textContent = f.name + '  (' + f.size + ' bytes)';
-      drop.classList.add('has-file');
-    }
-
-    input.addEventListener('change', function () {
-      if (input.files && input.files[0]) setFile(input.files[0]);
-    });
-
-    ['dragenter', 'dragover'].forEach(function (ev) {
-      drop.addEventListener(ev, function (e) {
-        e.preventDefault();
-        drop.classList.add('drag');
-      });
-    });
-    ['dragleave', 'drop'].forEach(function (ev) {
-      drop.addEventListener(ev, function (e) {
-        e.preventDefault();
-        drop.classList.remove('drag');
-      });
-    });
-    drop.addEventListener('drop', function (e) {
-      var dt = e.dataTransfer;
-      if (dt && dt.files && dt.files[0]) setFile(dt.files[0]);
-    });
-
-    goBtn.addEventListener('click', function () {
-      if (!file) {
-        renderError(outEl, 'Choose a file first — drop it above or click to browse.');
-        return;
-      }
-      var shift = parseShift($(prefix + '-shift').value);
-      var password = $(prefix + '-pass').value.trim();
-      if (shift === null) {
-        renderError(outEl, "Invalid format. Please use 'File Path, Shift, Password' (notes.txt, 3, secret123).");
-        return;
-      }
-
-      var reader = new FileReader();
-      reader.onerror = function () {
-        renderError(outEl, 'Could not read the file: ' + file.name);
-      };
-      reader.onload = function () {
-        var content = String(reader.result);
-        if (content.indexOf('\uFFFD') !== -1) {
-          renderError(outEl, 'This does not look like valid UTF-8 text. The Python script would fail here too (UnicodeDecodeError).');
-          return;
-        }
-        var result = (verb === 'encrypt')
-          ? MyEncrypt.encrypt(content, shift, password)
-          : MyEncrypt.decrypt(content, shift, password);
-
-        var outName = derivedName(file.name, verb);
-        var blob = new Blob([result], { type: 'text/plain;charset=utf-8' });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = outName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-
-        renderOutput(
-          outEl,
-          (verb === 'encrypt' ? 'Encrypted and downloaded: ' : 'Decrypted and downloaded: ') + outName,
-          'Saved with shift=' + shift + ', password=' + password + '.  (' + result.length + ' chars)'
-        );
-      };
-      reader.readAsText(file, 'utf-8');
-    });
-  }
-
   /* ---------------- get seed ---------------- */
 
   function initSeedPanel() {
@@ -302,8 +207,6 @@
     initTabs();
     initTextPanel('enc', 'encrypt');
     initTextPanel('dec', 'decrypt');
-    initFilePanel('efile', 'encrypt');
-    initFilePanel('dfile', 'decrypt');
     initSeedPanel();
   }
 
