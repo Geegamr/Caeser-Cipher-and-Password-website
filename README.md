@@ -2,7 +2,7 @@
 
 ## Wahat?
 
-This is a Ceaser Cipher but it has a caractor set like 'abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&\*()\_+-=~`[]{}|;:',.<>/?' but when you give it a password it will scrambe the charactor set. and you can modify the shift amount.
+This is a Caeser Cipher but it has a caractor set like 'abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&\*()\_+-=~`[]{}|;:',.<>/?' but when you give it a password it will scramble the charactor set. and you can modify the shift amount.
 
 ## Why
 
